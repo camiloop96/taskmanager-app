@@ -1,0 +1,29 @@
+name: Deploy Dockerized NestJS app on DigitalOcean Droplet
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: 🔄 Deploy to Droplet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: 🔐 Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 🚀 Pull changes from Git repo on Droplet
+        run: |
+          ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=5 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            cd "${{ secrets.PROJECT_PATH }}"
+            git pull origin master
+          EOF
