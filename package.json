@@ -1,0 +1,41 @@
+{
+  "name": "task_sys",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "ts-node-dev -r tsconfig-paths/register src/main.ts",
+    "start": "node -r tsconfig-paths/register dist/main.js",
+    "build": "rimraf dist && tsc",
+    "start:prod": "npm run build && node dist/main.js",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "migration:create": "node --experimental-modules scripts/migration.creator.mjs",
+    "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate -d src/database/datasource.ts",
+    "migration:run-specific": "node --experimental-modules scripts/migration.runner.mjs",
+    "migration:run": "npm run build && ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run -d src/database/datasource.ts",
+    "migration:revert": "typeorm migration:revert"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/swagger": "^11.1.1",
+    "@nestjs/typeorm": "^11.0.0",
+    "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pg": "^8.14.1",
+    "swagger-ui-express": "^5.0.1",
+    "typeorm": "^0.3.22"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/passport-jwt": "^4.0.1"
+  }
+}

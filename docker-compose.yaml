@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    container_name: novalogic-db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - .env
+    ports:
+      - 5435:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - novalogic-net
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+  redis-data:
+
+
+networks:
+  novalogic-net:
+    driver: bridge
