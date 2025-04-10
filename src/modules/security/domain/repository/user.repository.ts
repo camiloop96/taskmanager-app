@@ -1,6 +1,6 @@
-import { UpdateUserDto } from "modules/security/application/dto/in/user.dto";
 import { QueryRunner } from "typeorm";
 import { User } from "../entity/user.entity";
+import { UpdateUserDto } from "@security/application/dto/in/update-user.dto";
 
 export abstract class UserRepository {
   abstract create(user: User, queryRunner?: QueryRunner): Promise<User>;

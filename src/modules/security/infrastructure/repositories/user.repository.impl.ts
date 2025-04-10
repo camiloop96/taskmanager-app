@@ -2,11 +2,11 @@ import { QueryRunner, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserRepository } from "modules/security/domain/repository/user.repository";
-import { UpdateUserDto } from "modules/security/application/dto/in/user.dto";
 import { Credentials } from "@security/domain/entity/credential.entity";
 import { User } from "@security/domain/entity/user.entity";
 import { UserModel } from "../persistence/models/user.model";
 import { CredentialsModel } from "../persistence/models/credential.model";
+import { UpdateUserDto } from "@security/application/dto/in/update-user.dto";
 
 // 🗃️ Mapper para conversión entre Modelo y Entidad
 export class UserMapper {

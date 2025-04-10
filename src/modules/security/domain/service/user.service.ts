@@ -1,8 +1,6 @@
-import {
-  CreateUserDto,
-  UpdateUserDto,
-} from "modules/security/application/dto/in/user.dto";
+import { CreateUserDto } from "@security/application/dto/in/create-user.dto";
 import { User } from "../entity/user.entity";
+import { UpdateUserDto } from "@security/application/dto/in/update-user.dto";
 
 export abstract class UserService {
   abstract createUser(createUserDto: CreateUserDto): Promise<User>;

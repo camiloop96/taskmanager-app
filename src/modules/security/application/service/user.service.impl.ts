@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { UserRepository } from "modules/security/domain/repository/user.repository";
-import { CreateUserDto, UpdateUserDto } from "../dto/in/user.dto";
+import { CreateUserDto } from "../dto/in/create-user.dto";
 import { UserService } from "modules/security/domain/service/user.service";
 import { CredentialsRepository } from "modules/security/domain/repository/credential.repository";
 import { User } from "modules/security/domain/entity/user.entity";
 import { Credentials } from "modules/security/domain/entity/credential.entity";
+import { UpdateUserDto } from "../dto/in/update-user.dto";
 
 @Injectable()
 export class UserServiceImpl implements UserService {
@@ -20,7 +21,7 @@ export class UserServiceImpl implements UserService {
 
     const credentials = new Credentials({
       id: credentialsId,
-      username: createUserDto.email,
+      username: createUserDto.username,
       password: createUserDto.password,
     });
     await this.credentialsRepository.create(credentials);

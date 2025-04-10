@@ -1,4 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsString,
+  IsEnum,
+  IsDateString,
+  IsUUID,
+  IsOptional,
+} from "class-validator";
 
 export class UpdateTaskDto {
   @ApiProperty({
@@ -6,6 +13,8 @@ export class UpdateTaskDto {
     description: "Título de la tarea",
     required: false,
   })
+  @IsOptional()
+  @IsString()
   title?: string;
 
   @ApiProperty({
@@ -13,6 +22,8 @@ export class UpdateTaskDto {
     description: "Descripción de la tarea",
     required: false,
   })
+  @IsOptional()
+  @IsString()
   description?: string;
 
   @ApiProperty({
@@ -21,6 +32,8 @@ export class UpdateTaskDto {
     description: "Estado de la tarea",
     required: false,
   })
+  @IsOptional()
+  @IsEnum(["TODO", "IN_PROGRESS", "DONE"])
   status?: "TODO" | "IN_PROGRESS" | "DONE";
 
   @ApiProperty({
@@ -28,6 +41,8 @@ export class UpdateTaskDto {
     description: "Fecha de vencimiento de la tarea",
     required: false,
   })
+  @IsOptional()
+  @IsDateString()
   dueDate?: Date;
 
   @ApiProperty({
@@ -35,6 +50,8 @@ export class UpdateTaskDto {
     description: "ID del usuario asignado a la tarea",
     required: false,
   })
+  @IsOptional()
+  @IsUUID()
   userId?: string;
 
   @ApiProperty({
@@ -42,6 +59,8 @@ export class UpdateTaskDto {
     description: "Nombre completo del usuario asignado",
     required: false,
   })
+  @IsOptional()
+  @IsString()
   userFullName?: string;
 
   constructor(params: {
