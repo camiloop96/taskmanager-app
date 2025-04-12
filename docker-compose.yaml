@@ -1,9 +1,19 @@
-version: "3.8"
-
 services:
+  api:
+    container_name: taskmanager
+    image: taskmanager-api:latest
+    ports:
+      - '49160:${PORT}'
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - taskmanager-net
+    restart: unless-stopped
 
   postgres:
-    container_name: novalogic-db
+    container_name: taskmanager-db
     image: postgres:15-alpine
     restart: always
     environment:
@@ -15,18 +25,16 @@ services:
     env_file:
       - .env
     ports:
-      - 5435:5432
+      - 5436:5432
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - tasksys-data:/var/lib/postgresql/data
     networks:
-      - novalogic-net
+      - taskmanager-net
 
 volumes:
-  postgres-data:
-  pgadmin-data:
-  redis-data:
+  tasksys-data:
 
 
 networks:
-  novalogic-net:
+  taskmanager-net:
     driver: bridge
