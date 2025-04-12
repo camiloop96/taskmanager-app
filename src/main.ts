@@ -14,15 +14,18 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api", app, document);
 
+  app.enableCors({
+    origin: true,
+    allowedHeaders: "Content-Type, Authorization, Accept",
+    methods: "GET, POST, PUT, DELETE, OPTIONS",
+    credentials: true, // Si usas cookies o autenticación
+  });
+
   // Middleware de morgan
   app.use(morgan(morganFormat, morganOptions));
 
   // Cookie parser
   app.use(cookieParser());
-
-  app.enableCors({
-    allowedHeaders: "Content-Type, Authorization",
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -34,7 +37,7 @@ async function bootstrap() {
 
   // Server
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, "0.0.0.0");
 
   // Logs
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
