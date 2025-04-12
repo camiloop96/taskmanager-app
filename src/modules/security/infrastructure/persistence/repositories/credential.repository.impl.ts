@@ -31,8 +31,15 @@ export class CredentialsRepositoryImpl implements CredentialsRepository {
   }
 
   /** FIND CREDENTIALS BY USERNAME */
-  async findByUsername(username: string): Promise<Credentials | null> {
-    const found = await this.repo.findOne({ where: { username } });
+  async findByUsername(
+    username: string,
+    queryRunner?: QueryRunner
+  ): Promise<Credentials | null> {
+    const repo = queryRunner
+      ? queryRunner.manager.getRepository(CredentialsModel)
+      : this.repo;
+
+    const found = await repo.findOne({ where: { username } });
     return found ? this.toDomain(found) : null;
   }
 

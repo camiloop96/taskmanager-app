@@ -1,4 +1,10 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  Index,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { UserModel } from "./user.model";
 
 @Entity("credentials")
@@ -9,6 +15,7 @@ export class CredentialsModel {
 
   /** credentials.username */
   @Column({ unique: true })
+  @Index({ unique: true })
   username!: string;
 
   /** credentials.password */

@@ -6,6 +6,7 @@ import { TaskResponseDto } from "@tasks/application/dto/out/task-response.dto";
 import { Task } from "@tasks/domain/entity/task.entity";
 import { TaskRepository } from "@tasks/domain/repository/task.repository";
 import { UserService } from "@security/domain/service/user.service";
+import { Role } from "@security/domain/entity/roles.enum";
 
 @Injectable()
 export class TaskServiceImpl implements TaskService {
@@ -15,8 +16,12 @@ export class TaskServiceImpl implements TaskService {
   ) {}
 
   /** 🏷️ Crea una nueva tarea */
-  async createTask(createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
-    const user = await this.userService.getUserById(createTaskDto.userId);
+  async createTask(
+    createTaskDto: CreateTaskDto,
+    userId: string
+  ): Promise<TaskResponseDto> {
+    console.log(createTaskDto);
+    const user = await this.userService.getUserById(userId);
     if (!user) {
       throw new NotFoundException("Usuario no encontrado");
     }
@@ -25,7 +30,7 @@ export class TaskServiceImpl implements TaskService {
       title: createTaskDto.title,
       description: createTaskDto.description,
       status: createTaskDto.status,
-      dueDate: createTaskDto.dueDate,
+      dueDate: new Date(createTaskDto.dueDate),
       user: user,
     });
 
@@ -36,7 +41,7 @@ export class TaskServiceImpl implements TaskService {
       title: created.getTitle(),
       description: created.getDescription(),
       status: created.getStatus(),
-      dueDate: created.getDueDate(),
+      dueDate: new Date(created.getDueDate()),
       userId: created.getUser().getId()!,
       userFullName: created.getUser().getFullName(),
     });
@@ -112,10 +117,16 @@ export class TaskServiceImpl implements TaskService {
   }
 
   /** 🏷️ Obtiene todas las tareas */
-  async getAllTasks(): Promise<TaskResponseDto[]> {
-    const tasks = await this.taskRepository.findAll();
+  async getAllTasks(userId: string, role: Role): Promise<TaskResponseDto[]> {
+    let tasks: Task[];
 
-    return tasks.map(
+    if (role === Role.ADMIN) {
+      tasks = await this.taskRepository.findAll();
+    } else {
+      tasks = (await this.taskRepository.findByUserId(userId)) ?? null;
+    }
+
+    return tasks?.map(
       (task) =>
         new TaskResponseDto({
           id: task.getId()!,

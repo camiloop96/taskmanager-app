@@ -6,22 +6,35 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags, ApiBody, ApiResponse } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiBody,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiSecurity,
+} from "@nestjs/swagger";
 import { JwtAuthGuard } from "@security/infrastructure/guards/jwt.auth.guard";
 import { TaskService } from "@tasks/domain/service/task.service";
 import { CreateTaskDto } from "@tasks/application/dto/in/create-task.dto";
 import { UpdateTaskDto } from "@tasks/application/dto/in/update-task.dto";
 import { TaskResponseDto } from "@tasks/application/dto/out/task-response.dto";
+import { RolesGuard } from "@security/infrastructure/guards/roles.guard";
+import { Roles } from "@common/decorators/roles.decorators";
+import { Role } from "@security/domain/entity/roles.enum";
 
 @ApiTags("Tasks")
 @Controller("/tasks")
+@ApiSecurity("jwt-auth")
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   /** ✅ Crear una nueva tarea */
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
   @Post()
   @ApiBody({ type: CreateTaskDto })
   @ApiResponse({
@@ -29,8 +42,9 @@ export class TaskController {
     description: "Tarea creada exitosamente",
     type: TaskResponseDto,
   })
-  async createTask(@Body() createTaskDto: CreateTaskDto) {
-    const task = await this.taskService.createTask(createTaskDto);
+  async createTask(@Req() request: any, @Body() createTaskDto: CreateTaskDto) {
+    const { userId } = request.user;
+    const task = await this.taskService.createTask(createTaskDto, userId);
     return {
       statusCode: 201,
       message: "Tarea creada exitosamente",
@@ -73,7 +87,8 @@ export class TaskController {
   }
 
   /** 🔍 Obtener tarea por ID */
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.USER)
   @Get(":id")
   @ApiResponse({
     status: 200,
@@ -90,15 +105,19 @@ export class TaskController {
   }
 
   /** 📋 Obtener todas las tareas */
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.USER)
   @Get()
   @ApiResponse({
     status: 200,
     description: "Lista de tareas obtenida exitosamente",
     type: [TaskResponseDto],
   })
-  async getAllTasks() {
-    const tasks = await this.taskService.getAllTasks();
+  async getAllTasks(@Req() request: any) {
+    console.log("USERS", request.user);
+    const { role, userId } = request.user;
+    const tasks = await this.taskService.getAllTasks(userId, role);
     return {
       statusCode: 200,
       message: "Lista de tareas obtenida exitosamente",

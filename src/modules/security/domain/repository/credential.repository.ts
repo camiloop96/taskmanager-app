@@ -7,7 +7,10 @@ export abstract class CredentialsRepository {
     queryRunner?: QueryRunner
   ): Promise<Credentials>;
   abstract findById(id: string): Promise<Credentials | null>;
-  abstract findByUsername(username: string): Promise<Credentials | null>;
+  abstract findByUsername(
+    username: string,
+    queryRunner?: QueryRunner
+  ): Promise<Credentials | null>;
   abstract findAll(): Promise<Credentials[]>;
   abstract update(
     id: string,

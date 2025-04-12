@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { CredentialsRepository } from "@security/domain/repository/credential.repository";
 import { UserRepository } from "@security/domain/repository/user.repository";
@@ -11,14 +16,30 @@ import { Credentials } from "@security/domain/entity/credential.entity";
 import { User } from "@security/domain/entity/user.entity";
 import { CreateUserDto } from "../dto/in/create-user.dto";
 import { Role } from "@security/domain/entity/roles.enum";
+import { CredentialsModel } from "@security/infrastructure/persistence/models/credential.model";
+import { DataSource } from "typeorm";
+import { runInTransaction } from "@common/transaction.util";
+import { CreateUserResponseDto } from "../dto/out/create-user.response.dto";
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,
     private readonly userRepository: UserRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly dataSource: DataSource
   ) {}
+  async getAllUsers(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.findAll();
+    return users.map((user) => {
+      const dto = new UserResponseDto();
+      dto.id = user.getId()!;
+      dto.fullName = user.getFullName();
+      dto.username = user.getCredentials().getUsername();
+      dto.role = user.getRole();
+      return dto;
+    });
+  }
 
   /** 🏷️ Autentica al usuario y retorna el token, rol y datos del usuario */
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
@@ -48,6 +69,7 @@ export class AuthServiceImpl implements AuthService {
       throw new UnauthorizedException("User not found");
     }
 
+    console.log(user.getRole());
     const payload = {
       sub: user.getId(),
       role: user.getRole(),
@@ -72,8 +94,6 @@ export class AuthServiceImpl implements AuthService {
       if (!decodedToken || !decodedToken.exp) {
         throw new UnauthorizedException("Invalid token");
       }
-
-      const expiresIn = decodedToken.exp - Math.floor(Date.now() / 1000);
     } catch (error) {
       throw new UnauthorizedException("Logout failed");
     }
@@ -143,41 +163,46 @@ export class AuthServiceImpl implements AuthService {
     }
   }
 
-  async register(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const { fullName, username, password } = createUserDto;
+  async register(createUserDto: CreateUserDto): Promise<CreateUserResponseDto> {
+    return await runInTransaction(this.dataSource, async (queryRunner) => {
+      const { fullName, username, password } = createUserDto;
 
-    const existingCredentials = await this.credentialsRepository.findByUsername(
-      username
-    );
-    if (existingCredentials) {
-      throw new UnauthorizedException("El usuario ya existe");
-    }
+      const normalizedUsername = username.trim().toLowerCase();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      const existingCredentials =
+        await this.credentialsRepository.findByUsername(normalizedUsername);
+      if (existingCredentials) {
+        throw new ConflictException("El usuario ya existe");
+      }
 
-    const credentials = new Credentials({
-      username: username,
-      password: hashedPassword,
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const credentials = new Credentials({
+        username: normalizedUsername,
+        password: hashedPassword,
+        isActive: false,
+        lastLogin: null,
+        user: null,
+      });
+
+      const user = new User({
+        fullName,
+        role: Role.USER,
+        credentials,
+        tasks: [],
+      });
+
+      credentials.setUser(user);
+
+      const savedUser = await this.userRepository.create(user, queryRunner);
+
+      const response = new CreateUserResponseDto();
+      response.id = savedUser.getId()!;
+      response.fullName = savedUser.getFullName();
+      (response.username = savedUser.getCredentials().getUsername()),
+        (response.role = savedUser.getRole());
+
+      return response;
     });
-
-    const savedCredentials = await this.credentialsRepository.create(
-      credentials
-    );
-
-    const user = new User({
-      fullName: fullName,
-      role: Role.USER,
-      credentials: savedCredentials,
-      tasks: [],
-    });
-
-    const savedUser = await this.userRepository.create(user);
-
-    const response = new UserResponseDto();
-    response.id = savedUser.getId()!;
-    response.fullName = savedUser.getFullName();
-    response.role = savedUser.getRole();
-
-    return response;
   }
 }

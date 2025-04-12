@@ -29,7 +29,6 @@ export class TaskMapper {
 
   static toPersistence(task: Task): TaskModel {
     const model = new TaskModel();
-    model.id = task.getId()!;
     model.title = task.getTitle();
     model.description = task.getDescription();
     model.status = task.getStatus() as TaskStatus;

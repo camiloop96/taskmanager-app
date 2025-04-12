@@ -3,6 +3,7 @@ import { AppModule } from "./app.module";
 import { SwaggerModule } from "@nestjs/swagger";
 import { swaggerConfig } from "@config/swagger.config";
 import morgan from "morgan";
+import { ValidationPipe } from "@nestjs/common";
 import { morganFormat, morganOptions } from "@config/morgan.config";
 import cookieParser from "cookie-parser";
 
@@ -18,11 +19,22 @@ async function bootstrap() {
 
   // Cookie parser
   app.use(cookieParser());
-  
+
+  app.enableCors({
+    allowedHeaders: "Content-Type, Authorization",
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    })
+  );
+
   // Server
   const port = process.env.PORT || 3000;
   await app.listen(port);
-
 
   // Logs
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);

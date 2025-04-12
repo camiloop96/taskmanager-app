@@ -72,4 +72,16 @@ export class TaskRepositoryImpl implements TaskRepository {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
   }
+
+  async findByUserId(userId: string): Promise<Task[]> {
+    const entities = await this.repo.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: ["user"],
+    });
+    return entities.map(TaskMapper.toDomain);
+  }
 }

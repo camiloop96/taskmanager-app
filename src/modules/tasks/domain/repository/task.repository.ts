@@ -12,4 +12,5 @@ export abstract class TaskRepository {
     queryRunner?: QueryRunner
   ): Promise<Task | null>;
   abstract delete(id: string, queryRunner?: QueryRunner): Promise<void>;
+  abstract findByUserId(userId: string): Promise<Task[]>;
 }

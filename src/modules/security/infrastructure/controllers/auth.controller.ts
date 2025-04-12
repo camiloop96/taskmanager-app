@@ -19,6 +19,7 @@ import { UserResponseDto } from "@security/application/dto/out/user.response.dto
 import { Roles } from "@common/decorators/roles.decorators";
 import { Role } from "@security/domain/entity/roles.enum";
 import { CreateUserResponseDto } from "@security/application/dto/out/create-user.response.dto";
+import { RolesGuard } from "../guards/roles.guard";
 
 export interface ExtendedRequest extends Request {
   token?: string;
@@ -73,9 +74,9 @@ export class AuthController {
     };
   }
 
-  @Roles(Role.ADMIN, Role.USER)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.USER)
   @Get("profile")
   @ApiResponse({
     status: 200,
@@ -101,6 +102,7 @@ export class AuthController {
     };
   }
 
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Post("register")
   @ApiBody({ type: CreateUserDto })
@@ -117,5 +119,22 @@ export class AuthController {
     @Body() createUserDto: CreateUserDto
   ): Promise<CreateUserResponseDto> {
     return await this.authService.register(createUserDto);
+  }
+
+  @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get("users")
+  @ApiResponse({
+    status: 200,
+    description: "Lista de usuarios obtenida exitosamente",
+    type: [UserResponseDto],
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Token inválido o no proporcionado",
+  })
+  async getUsers(): Promise<UserResponseDto[]> {
+    return await this.authService.getAllUsers();
   }
 }

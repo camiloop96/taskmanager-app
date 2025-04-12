@@ -16,6 +16,9 @@ export class UserResponseDto {
   @ApiProperty({ example: "USER", description: "Rol del usuario" })
   role!: string;
 
+  @ApiProperty({ example: "juanperez10", description: "Usuario" })
+  username!: string;
+
   @ApiProperty({
     type: [String],
     example: ["Task 1", "Task 2"],

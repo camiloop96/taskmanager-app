@@ -1,10 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import {
   IsString,
   IsNotEmpty,
   IsEnum,
   IsDateString,
   IsUUID,
+  IsDate,
 } from "class-validator";
 
 export class CreateTaskDto {
@@ -36,7 +38,8 @@ export class CreateTaskDto {
     example: "2025-04-30T23:59:59.000Z",
     description: "Fecha de vencimiento de la tarea",
   })
-  @IsDateString()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
   dueDate!: Date;
 
   @ApiProperty({

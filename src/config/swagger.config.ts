@@ -14,4 +14,5 @@ export const swaggerConfig = new DocumentBuilder()
     },
     "jwt-auth"
   )
+
   .build();

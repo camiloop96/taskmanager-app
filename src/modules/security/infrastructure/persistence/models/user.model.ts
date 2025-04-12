@@ -25,7 +25,8 @@ export class UserModel {
 
   /** users.credentials_id -> credentials.id */
   @OneToOne(() => CredentialsModel, (credentials) => credentials.user, {
-    eager: false,
+    eager: true,
+    cascade: true,
   })
   @JoinColumn({ name: "credentials_id" })
   credentials!: CredentialsModel;

@@ -13,8 +13,9 @@ export class CreateUserResponseDto {
   })
   fullName!: string;
 
+  @ApiProperty({ example: "juanperez10", description: "Usuario" })
+  username!: string;
+
   @ApiProperty({ example: "USER", description: "Rol del usuario" })
   role!: string;
-
-  
 }
