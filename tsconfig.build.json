@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["/*"],
+      "@common/*": ["common/*"],
+      "@config/*": ["config/*"],
+      "@security/*": ["modules/security/*"],
+      "@tasks/*": ["modules/tasks/*"]
+    },
+    "removeComments": true,
+    "declaration": false,
+    "sourceMap": false,
+    "module": "CommonJS"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
+}
