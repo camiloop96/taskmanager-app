@@ -2,8 +2,6 @@ services:
   api:
     container_name: taskmanager-server
     image: taskmanager-server:latest
-    ports:
-      - '4000:${PORT}'
     env_file:
       - .env
     depends_on:
