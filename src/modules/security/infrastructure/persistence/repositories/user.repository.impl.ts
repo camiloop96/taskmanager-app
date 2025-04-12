@@ -1,13 +1,13 @@
 import { QueryRunner, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { User } from "modules/security/domain/entities/user.entity";
 import { UserRepository } from "modules/security/domain/repository/user.repository";
-import { UpdateUserDto } from "@security/application/dto/in/create-user.dto";
+
 import { UserModel } from "../models/user.model";
 import { CredentialsModel } from "../models/credential.model";
-import { Credentials } from "modules/security/domain/entities/credential.entity";
-import { TenantModel } from "modules/tenant/infrastructure/models/tenant.model";
+import { Credentials } from "@security/domain/entity/credential.entity";
+import { User } from "@security/domain/entity/user.entity";
+import { UpdateUserDto } from "@security/application/dto/in/update-user.dto";
 
 // 🗃️ Mapper para conversión entre Modelo y Entidad
 export class UserMapper {
@@ -23,24 +23,16 @@ export class UserMapper {
     return new User({
       id: model.id,
       fullName: model.fullName,
-      email: model.email,
-      phoneNumber: model.phoneNumber || null,
       role: model.role,
-      tenantId: model.tenant?.id!,
       credentials: credentials,
+      tasks: [],
     });
   }
 
   static toPersistence(user: User): UserModel {
     const model = new UserModel();
     model.fullName = user.getFullName();
-    model.email = user.getEmail();
-    model.phoneNumber = user.getPhoneNumber() || undefined;
     model.role = user.getRole();
-    if (!model.tenant) {
-      model.tenant = new TenantModel();
-    }
-    model.tenant.id = user.getTenantId()!;
 
     // 🏗️ Crea el objeto completo de CredentialsModel
     if (user.getCredentials()) {

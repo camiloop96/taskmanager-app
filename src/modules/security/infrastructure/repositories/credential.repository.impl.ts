@@ -17,6 +17,7 @@ export class CredentialsRepositoryImpl implements CredentialsRepository {
     credentials: Credentials,
     queryRunner: QueryRunner
   ): Promise<Credentials> {
+    console.log(credentials);
     const credentialsModel = this.toPersistence(credentials);
     const repo =
       queryRunner?.manager.getRepository(CredentialsModel) ?? this.repo;

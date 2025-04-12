@@ -6,6 +6,7 @@ import { CredentialsRepository } from "modules/security/domain/repository/creden
 import { User } from "modules/security/domain/entity/user.entity";
 import { Credentials } from "modules/security/domain/entity/credential.entity";
 import { UpdateUserDto } from "../dto/in/update-user.dto";
+import { Role } from "@security/domain/entity/roles.enum";
 
 @Injectable()
 export class UserServiceImpl implements UserService {
@@ -29,7 +30,7 @@ export class UserServiceImpl implements UserService {
     const user = new User({
       id: userId,
       fullName: createUserDto.fullName,
-      role: createUserDto.role,
+      role: Role.USER,
       credentials: credentials,
       tasks: [],
     });

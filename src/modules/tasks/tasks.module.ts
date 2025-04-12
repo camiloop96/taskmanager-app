@@ -6,9 +6,10 @@ import { TaskServiceImpl } from "./application/service/task.service.impl";
 import { TaskRepository } from "./domain/repository/task.repository";
 import { TaskRepositoryImpl } from "./infrastructure/persistence/repositories/task.repository.impl";
 import { TaskController } from "./infrastructure/controllers/task.controller";
+import { SecurityModule } from "@security/security.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TaskModel])],
+  imports: [TypeOrmModule.forFeature([TaskModel]), SecurityModule],
   providers: [
     {
       provide: TaskService,

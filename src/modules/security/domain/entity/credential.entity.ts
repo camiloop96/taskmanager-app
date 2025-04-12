@@ -1,7 +1,7 @@
 import { User } from "./user.entity";
 
 export class Credentials {
-  private _id: string | null;
+  private _id?: string | null;
   private _username: string;
   private _password: string;
   private _isActive: boolean;
@@ -26,7 +26,7 @@ export class Credentials {
 
   // Getters
   getId(): string | null {
-    return this._id;
+    return this._id!;
   }
 
   getUsername(): string {

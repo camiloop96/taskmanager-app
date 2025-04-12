@@ -1,5 +1,6 @@
+import { UserModel } from "@security/infrastructure/persistence/models/user.model";
 import { TaskStatus } from "@tasks/domain/entity/task-status.enum";
-import { UserModel } from "modules/security/infrastructure/persistence/models/user.model";
+
 import {
   Column,
   Entity,

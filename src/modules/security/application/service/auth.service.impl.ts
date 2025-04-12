@@ -1,21 +1,23 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { CredentialsRepository } from "@security/domain/repository/credential.repository";
-import { TokenBlacklistRepository } from "@security/domain/repository/token-blacklist.repository";
 import { UserRepository } from "@security/domain/repository/user.repository";
 import { AuthService } from "@security/domain/service/auth.service";
 import { AuthResponseDto } from "../dto/out/login.response.dto";
 import { LoginDto } from "../dto/in/login.dto";
 import bcrypt from "bcrypt";
 import { UserResponseDto } from "../dto/out/user.response.dto";
+import { Credentials } from "@security/domain/entity/credential.entity";
+import { User } from "@security/domain/entity/user.entity";
+import { CreateUserDto } from "../dto/in/create-user.dto";
+import { Role } from "@security/domain/entity/roles.enum";
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,
     private readonly userRepository: UserRepository,
-    private readonly jwtService: JwtService,
-    private readonly tokenBlacklistRepository: TokenBlacklistRepository
+    private readonly jwtService: JwtService
   ) {}
 
   /** 🏷️ Autentica al usuario y retorna el token, rol y datos del usuario */
@@ -72,9 +74,6 @@ export class AuthServiceImpl implements AuthService {
       }
 
       const expiresIn = decodedToken.exp - Math.floor(Date.now() / 1000);
-      if (expiresIn > 0) {
-        await this.tokenBlacklistRepository.addToBlacklist(token, expiresIn);
-      }
     } catch (error) {
       throw new UnauthorizedException("Logout failed");
     }
@@ -83,13 +82,6 @@ export class AuthServiceImpl implements AuthService {
   /** 🏷️ Renueva el access token usando el refresh token */
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
-      const isBlacklisted = await this.tokenBlacklistRepository.isBlacklisted(
-        refreshToken
-      );
-      if (isBlacklisted) {
-        throw new UnauthorizedException("Refresh token is blacklisted");
-      }
-
       const decodedToken = this.jwtService.verify(refreshToken, {
         secret: "SECRET_REFRESH_KEY",
       });
@@ -141,14 +133,51 @@ export class AuthServiceImpl implements AuthService {
       }
 
       const userResponse = new UserResponseDto();
-      userResponse.id = user.getId()!; 
+      userResponse.id = user.getId()!;
       userResponse.fullName = user.getFullName();
       userResponse.role = user.getRole();
 
       return userResponse;
-
     } catch (error) {
       throw new UnauthorizedException("No se pudo obtener el perfil");
     }
+  }
+
+  async register(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const { fullName, username, password } = createUserDto;
+
+    const existingCredentials = await this.credentialsRepository.findByUsername(
+      username
+    );
+    if (existingCredentials) {
+      throw new UnauthorizedException("El usuario ya existe");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const credentials = new Credentials({
+      username: username,
+      password: hashedPassword,
+    });
+
+    const savedCredentials = await this.credentialsRepository.create(
+      credentials
+    );
+
+    const user = new User({
+      fullName: fullName,
+      role: Role.USER,
+      credentials: savedCredentials,
+      tasks: [],
+    });
+
+    const savedUser = await this.userRepository.create(user);
+
+    const response = new UserResponseDto();
+    response.id = savedUser.getId()!;
+    response.fullName = savedUser.getFullName();
+    response.role = savedUser.getRole();
+
+    return response;
   }
 }

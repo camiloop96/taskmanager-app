@@ -8,12 +8,17 @@ import {
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { LoginDto } from "modules/security/application/dto/in/login.dto";
 import { AuthResponseDto } from "modules/security/application/dto/out/login.response.dto";
 import { JwtAuthGuard } from "../guards/jwt.auth.guard";
 import { Response, Request } from "express";
 import { AuthService } from "modules/security/domain/service/auth.service";
+import { CreateUserDto } from "@security/application/dto/in/create-user.dto";
+import { UserResponseDto } from "@security/application/dto/out/user.response.dto";
+import { Roles } from "@common/decorators/roles.decorators";
+import { Role } from "@security/domain/entity/roles.enum";
+import { CreateUserResponseDto } from "@security/application/dto/out/create-user.response.dto";
 
 export interface ExtendedRequest extends Request {
   token?: string;
@@ -68,7 +73,9 @@ export class AuthController {
     };
   }
 
+  @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("jwt-auth")
   @Get("profile")
   @ApiResponse({
     status: 200,
@@ -92,5 +99,23 @@ export class AuthController {
       message: "Usuario obtenido con éxito",
       data: user,
     };
+  }
+
+  @Roles(Role.ADMIN)
+  @Post("register")
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({
+    status: 201,
+    description: "Usuario creado exitosamente",
+    type: CreateUserResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Datos inválidos o usuario ya existe",
+  })
+  async register(
+    @Body() createUserDto: CreateUserDto
+  ): Promise<CreateUserResponseDto> {
+    return await this.authService.register(createUserDto);
   }
 }

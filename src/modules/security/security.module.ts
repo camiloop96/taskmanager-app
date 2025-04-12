@@ -13,8 +13,6 @@ import { UserModel } from "./infrastructure/persistence/models/user.model";
 import { CredentialsModel } from "./infrastructure/persistence/models/credential.model";
 import { JwtStrategy } from "./application/strategies/jwt.strategy";
 import { JwtAuthGuard } from "./infrastructure/guards/jwt.auth.guard";
-import { TokenBlacklistRepository } from "./domain/repository/token-blacklist.repository";
-import { RedisTokenBlacklistRepository } from "./infrastructure/persistence/repositories/redis.token-blacklisted.impl";
 import { AuthService } from "./domain/service/auth.service";
 import { UserService } from "./domain/service/user.service";
 import { PasswordEncryptionService } from "./domain/service/password.service";
@@ -49,15 +47,10 @@ import { PasswordEncryptionServiceImpl } from "./application/service/password.se
       useClass: UserServiceImpl,
     },
     { provide: UserRepository, useClass: UserRepositoryImpl },
-    {
-      provide: TokenBlacklistRepository,
-      useClass: RedisTokenBlacklistRepository,
-    },
   ],
   controllers: [AuthController],
   exports: [
     AuthService,
-    TokenBlacklistRepository,
     UserRepository,
     CredentialsRepository,
     UserService,

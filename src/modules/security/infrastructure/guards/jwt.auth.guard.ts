@@ -4,35 +4,29 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { TokenBlacklistRepository } from "modules/security/domain/repository/token-blacklist.repository";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {
-  constructor(
-    private readonly tokenBlacklistRepository: TokenBlacklistRepository
-  ) {
+  constructor() {
     super();
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    let token = request.headers.authorization;
+    const authHeader = request.headers.authorization;
 
-    if (!token) {
-      throw new UnauthorizedException("Token not provided");
+    // Validacion del token
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new UnauthorizedException("Bearer token requerido en el header");
     }
 
-    // ✅ Elimina el prefijo "Bearer " si está presente
-    token = token.replace(/^Bearer\s+/i, "");
+    // Extraer el token del header
+    const token = authHeader.replace(/^Bearer\s+/i, "");
 
-    // ❌ Verificar si el token está en la blacklist
-    if (await this.tokenBlacklistRepository.isBlacklisted(token)) {
-      throw new UnauthorizedException("Token revoked");
-    }
-
-
+    // Hacerlo accesible desde otros lugares si se necesita
     request.token = token;
 
-    return (await super.canActivate(context)) as boolean;
+    // Dejar que Passport haga su validación
+    return super.canActivate(context) as boolean | Promise<boolean>;
   }
 }

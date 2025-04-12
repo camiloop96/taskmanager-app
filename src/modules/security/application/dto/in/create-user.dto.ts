@@ -10,14 +10,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({
-    example: "ADMIN",
-    description: "Rol del usuario",
-    enum: ["ADMIN", "USER"],
-  })
-  @IsIn(["ADMIN", "USER"])
-  role!: string;
-
   /** CREDENTIALS */
   @ApiProperty({
     example: "juanperez",
