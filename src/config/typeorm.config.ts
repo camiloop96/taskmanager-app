@@ -10,6 +10,8 @@ const {
   POSTGRES_DB,
 } = process.env;
 
+const isCompiled = __filename.endsWith(".js");
+
 export const typeOrmConfig: TypeOrmModuleOptions & DataSourceOptions = {
   type: "postgres",
   host: POSTGRES_HOST || "localhost",
@@ -19,9 +21,15 @@ export const typeOrmConfig: TypeOrmModuleOptions & DataSourceOptions = {
   database: POSTGRES_DB || "task_db",
   synchronize: true,
   autoLoadEntities: true,
-  logging: false,
+  logging: true,
   logger: "advanced-console",
   migrationsRun: false,
-  migrations: ["src/**/migrations/*.ts"],
-  entities: ["src/modules/**/infrastructure/persistence/models/*.model.ts"],
+  migrations: [
+    isCompiled ? "dist/**/migrations/*.js" : "src/**/migrations/*.ts",
+  ],
+  entities: [
+    isCompiled
+      ? "dist/modules/**/infrastructure/persistence/models/*.model.js"
+      : "src/modules/**/infrastructure/persistence/models/*.model.ts",
+  ],
 };
