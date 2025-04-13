@@ -75,7 +75,7 @@ export class AuthController {
   }
 
   @ApiBearerAuth("jwt-auth")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.USER)
   @Get("profile")
   @ApiResponse({

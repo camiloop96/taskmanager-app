@@ -17,7 +17,6 @@ export class CredentialsRepositoryImpl implements CredentialsRepository {
     credentials: Credentials,
     queryRunner: QueryRunner
   ): Promise<Credentials> {
-    console.log("Credentials",credentials);
     const credentialsModel = this.toPersistence(credentials);
     const repo =
       queryRunner?.manager.getRepository(CredentialsModel) ?? this.repo;
@@ -28,7 +27,6 @@ export class CredentialsRepositoryImpl implements CredentialsRepository {
   /** FIND CREDENTIALS BY ID */
   async findById(id: string): Promise<Credentials | null> {
     const found = await this.repo.findOne({ where: { id } });
-    console.log("found", found)
     return found ? this.toDomain(found) : null;
   }
 

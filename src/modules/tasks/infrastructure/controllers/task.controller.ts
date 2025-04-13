@@ -115,7 +115,6 @@ export class TaskController {
     type: [TaskResponseDto],
   })
   async getAllTasks(@Req() request: any) {
-    console.log("USERS", request.user);
     const { role, userId } = request.user;
     const tasks = await this.taskService.getAllTasks(userId, role);
     return {

@@ -20,7 +20,6 @@ export class TaskServiceImpl implements TaskService {
     createTaskDto: CreateTaskDto,
     userId: string
   ): Promise<TaskResponseDto> {
-    console.log(createTaskDto);
     const user = await this.userService.getUserById(userId);
     if (!user) {
       throw new NotFoundException("Usuario no encontrado");

@@ -69,7 +69,6 @@ export class AuthServiceImpl implements AuthService {
       throw new UnauthorizedException("User not found");
     }
 
-    console.log(user.getRole());
     const payload = {
       sub: user.getId(),
       role: user.getRole(),
