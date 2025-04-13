@@ -1,5 +1,5 @@
 {
-  "name": "task_sys",
+  "name": "taskify-api",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
