@@ -21,7 +21,7 @@ export const typeOrmConfig: TypeOrmModuleOptions & DataSourceOptions = {
   database: POSTGRES_DB || "task_db",
   synchronize: true,
   autoLoadEntities: true,
-  logging: true,
+  logging: false,
   logger: "advanced-console",
   migrationsRun: false,
   migrations: [
