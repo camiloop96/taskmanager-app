@@ -7,6 +7,7 @@ import { Task } from "@tasks/domain/entity/task.entity";
 import { TaskRepository } from "@tasks/domain/repository/task.repository";
 import { UserService } from "@security/domain/service/user.service";
 import { Role } from "@security/domain/entity/roles.enum";
+import { TaskFilters } from "@tasks/domain/interfaces/task-filters.type";
 
 @Injectable()
 export class TaskServiceImpl implements TaskService {
@@ -115,18 +116,26 @@ export class TaskServiceImpl implements TaskService {
     });
   }
 
-  /** 🏷️ Obtiene todas las tareas */
-  async getAllTasks(userId: string, role: Role): Promise<TaskResponseDto[]> {
-    let tasks: Task[];
+  /** 🏷️ Obtiene todas las tareas con filtros y paginación */
+  async getAllTasks(
+    userId: string,
+    role: Role,
+    filters: TaskFilters
+  ): Promise<TaskResponseDto[]> {
+    const tasks = await this.taskRepository.findWithFilters(
+      userId,
+      role,
+      filters
+    );
 
-    if (role === Role.ADMIN) {
-      tasks = await this.taskRepository.findAll();
-    } else {
-      tasks = (await this.taskRepository.findByUserId(userId)) ?? null;
+    if (!tasks || tasks.length === 0) {
+      throw new NotFoundException(
+        "No se encontraron tareas con los filtros aplicados"
+      );
     }
 
-    return tasks?.map(
-      (task) =>
+    return tasks.map(
+      (task: Task) =>
         new TaskResponseDto({
           id: task.getId()!,
           title: task.getTitle(),

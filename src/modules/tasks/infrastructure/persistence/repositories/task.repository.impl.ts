@@ -5,6 +5,8 @@ import { Repository, QueryRunner } from "typeorm";
 import { Task } from "@tasks/domain/entity/task.entity";
 import { TaskModel } from "../models/task.model";
 import { TaskMapper } from "@tasks/application/dto/mappers/task.mapper";
+import { Role } from "@security/domain/entity/roles.enum";
+import { TaskFilters } from "@tasks/domain/interfaces/task-filters.type";
 
 @Injectable()
 export class TaskRepositoryImpl implements TaskRepository {
@@ -83,5 +85,35 @@ export class TaskRepositoryImpl implements TaskRepository {
       relations: ["user"],
     });
     return entities.map(TaskMapper.toDomain);
+  }
+
+  async findWithFilters(
+    userId: string,
+    role: Role,
+    filters: TaskFilters
+  ): Promise<Task[]> {
+    const { status, dueDate, page, limit } = filters;
+
+    const query = this.repo
+      .createQueryBuilder("task")
+      .leftJoinAndSelect("task.user", "user");
+
+    if (role !== Role.ADMIN) {
+      query.where("user.id = :userId", { userId });
+    }
+
+    if (status) {
+      query.andWhere("task.status = :status", { status });
+    }
+
+    if (dueDate) {
+      query.andWhere("task.dueDate = :dueDate", { dueDate });
+    }
+
+    query.skip((page - 1) * limit).take(limit);
+
+    const taskModels = await query.getMany();
+
+    return taskModels.map(TaskMapper.toDomain);
   }
 }

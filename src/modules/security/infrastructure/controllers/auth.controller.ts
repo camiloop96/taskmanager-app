@@ -102,7 +102,8 @@ export class AuthController {
     };
   }
 
-  @UseGuards(RolesGuard)
+  @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post("register")
   @ApiBody({ type: CreateUserDto })

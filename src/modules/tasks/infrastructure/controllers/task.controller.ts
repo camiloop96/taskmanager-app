@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -15,6 +16,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiSecurity,
+  ApiQuery,
 } from "@nestjs/swagger";
 import { JwtAuthGuard } from "@security/infrastructure/guards/jwt.auth.guard";
 import { TaskService } from "@tasks/domain/service/task.service";
@@ -24,6 +26,8 @@ import { TaskResponseDto } from "@tasks/application/dto/out/task-response.dto";
 import { RolesGuard } from "@security/infrastructure/guards/roles.guard";
 import { Roles } from "@common/decorators/roles.decorators";
 import { Role } from "@security/domain/entity/roles.enum";
+import { TaskStatus } from "@tasks/domain/entity/task-status.enum";
+import { TaskFilters } from "@tasks/domain/interfaces/task-filters.type";
 
 @ApiTags("Tasks")
 @Controller("/tasks")
@@ -53,7 +57,9 @@ export class TaskController {
   }
 
   /** 🔁 Actualizar una tarea */
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("jwt-auth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
   @Patch(":id")
   @ApiBody({ type: UpdateTaskDto })
   @ApiResponse({
@@ -74,6 +80,7 @@ export class TaskController {
   }
 
   /** ❌ Eliminar una tarea */
+  @ApiBearerAuth("jwt-auth")
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   @ApiResponse({ status: 200, description: "Tarea eliminada exitosamente" })
@@ -87,6 +94,7 @@ export class TaskController {
   }
 
   /** 🔍 Obtener tarea por ID */
+  @ApiBearerAuth("jwt-auth")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.USER)
   @Get(":id")
@@ -104,19 +112,54 @@ export class TaskController {
     };
   }
 
-  /** 📋 Obtener todas las tareas */
   @ApiBearerAuth("jwt-auth")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.USER)
+  @ApiQuery({
+    name: "status",
+    enum: TaskStatus,
+    required: false,
+  })
+  @ApiQuery({
+    name: "dueDate",
+    required: false,
+    description: "Fecha límite en formato YYYY-MM-DD o ISO (ej: 2025-04-20)",
+    example: "2025-04-20",
+  })
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Número de página para paginación",
+    example: 1,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Cantidad de resultados por página",
+    example: 10,
+  })
   @Get()
   @ApiResponse({
     status: 200,
     description: "Lista de tareas obtenida exitosamente",
     type: [TaskResponseDto],
   })
-  async getAllTasks(@Req() request: any) {
+  async getAllTasks(
+    @Req() request: any,
+    @Query("status") status?: TaskStatus,
+    @Query("dueDate") dueDate?: string,
+    @Query("page") page = "1",
+    @Query("limit") limit = "10"
+  ) {
     const { role, userId } = request.user;
-    const tasks = await this.taskService.getAllTasks(userId, role);
+    const filters: TaskFilters = {
+      status,
+      dueDate,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    };
+
+    const tasks = await this.taskService.getAllTasks(userId, role, filters);
     return {
       statusCode: 200,
       message: "Lista de tareas obtenida exitosamente",

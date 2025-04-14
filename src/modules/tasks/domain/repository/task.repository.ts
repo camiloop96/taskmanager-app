@@ -1,6 +1,7 @@
 import { QueryRunner } from "typeorm";
 import { Task } from "../entity/task.entity";
-import { UpdateTaskDto } from "@tasks/application/dto/in/update-task.dto";
+import { Role } from "@security/domain/entity/roles.enum";
+import { TaskFilters } from "../interfaces/task-filters.type";
 
 export abstract class TaskRepository {
   abstract create(task: Task, queryRunner?: QueryRunner): Promise<Task>;
@@ -13,4 +14,9 @@ export abstract class TaskRepository {
   ): Promise<Task | null>;
   abstract delete(id: string, queryRunner?: QueryRunner): Promise<void>;
   abstract findByUserId(userId: string): Promise<Task[]>;
+  abstract findWithFilters(
+    userId: string,
+    role: Role,
+    filters: TaskFilters
+  ): Promise<Task[]>;
 }

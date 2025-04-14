@@ -2,6 +2,7 @@ import { Role } from "@security/domain/entity/roles.enum";
 import { CreateTaskDto } from "@tasks/application/dto/in/create-task.dto";
 import { UpdateTaskDto } from "@tasks/application/dto/in/update-task.dto";
 import { TaskResponseDto } from "@tasks/application/dto/out/task-response.dto";
+import { TaskFilters } from "../interfaces/task-filters.type";
 
 export abstract class TaskService {
   abstract createTask(
@@ -14,5 +15,9 @@ export abstract class TaskService {
   ): Promise<TaskResponseDto>;
   abstract deleteTask(id: string): Promise<void>;
   abstract getTaskById(id: string): Promise<TaskResponseDto>;
-  abstract getAllTasks(userId: string, role: Role): Promise<TaskResponseDto[]>;
+  abstract getAllTasks(
+    userId: string,
+    role: Role,
+    filters: TaskFilters
+  ): Promise<TaskResponseDto[]>;
 }
